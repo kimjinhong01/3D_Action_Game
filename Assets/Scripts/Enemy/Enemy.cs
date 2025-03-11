@@ -1,7 +1,4 @@
 using System.Collections;
-using System.Collections.Generic;
-using UnityEditor;
-using UnityEditorInternal.Profiling.Memory.Experimental.FileFormat;
 using UnityEngine;
 using UnityEngine.AI;
 
@@ -17,14 +14,15 @@ public class Enemy : MonoBehaviour
     public GameObject bullet;
     public bool isChase;
     public bool isAttack;
+    public bool isDead;
 
-    Rigidbody rigid;
-    BoxCollider boxCollider;
-    MeshRenderer[] meshs;
-    NavMeshAgent nav;
-    Animator anim;
+    protected Rigidbody rigid;
+    protected BoxCollider boxCollider;
+    protected MeshRenderer[] meshs;
+    protected NavMeshAgent nav;
+    protected Animator anim;
 
-    void Awake()
+    protected virtual void Awake()
     {
         rigid = GetComponent<Rigidbody>();
         boxCollider = GetComponent<BoxCollider>();
@@ -62,7 +60,7 @@ public class Enemy : MonoBehaviour
 
     void Targeting()
     {
-        if (enemyType != Type.D)
+        if (!isDead && enemyType != Type.D)
         {
             float targetRadius = 0;
             float targetRange = 0;
@@ -187,6 +185,7 @@ public class Enemy : MonoBehaviour
                 mesh.material.color = Color.gray;
 
             gameObject.layer = 14;
+            isDead = true;
             isChase = false;
             nav.enabled = false;
             anim.SetTrigger("doDie");
