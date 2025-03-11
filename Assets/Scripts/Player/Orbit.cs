@@ -1,5 +1,3 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 public class Orbit : MonoBehaviour
@@ -15,6 +13,7 @@ public class Orbit : MonoBehaviour
 
     void Update()
     {
+        // 플레이어 주변으로 계속 돌아갈 수 있도록
         transform.position = target.position + offset;
         transform.RotateAround(target.position, Vector3.up, orbitSpeed * Time.deltaTime);
         offset = transform.position - target.position;

@@ -1,5 +1,4 @@
 using System.Collections;
-using System.Linq;
 using UnityEngine;
 using UnityEngine.AI;
 
@@ -95,6 +94,7 @@ public class Enemy : MonoBehaviour
         }
     }
 
+    // 몬스터 종류에 따라 공격 패턴 구현
     IEnumerator Attack()
     {
         isChase = false;
@@ -144,6 +144,7 @@ public class Enemy : MonoBehaviour
         FreezeVelocity();
     }
 
+    // 무기에 맞으면 데미지
     void OnTriggerEnter(Collider other)
     {
         if (other.tag == "Melee")
@@ -165,6 +166,7 @@ public class Enemy : MonoBehaviour
         }
     }
 
+    // 수류탄 맞으면 데미지
     public void HitByGrenade(Vector3 explosionPos)
     {
         curHealth -= 100;
@@ -173,8 +175,10 @@ public class Enemy : MonoBehaviour
 
     }
 
+    // 넉백 방향, 수류탄에 맞았는지
     IEnumerator OnDamage(Vector3 reactVec, bool isGrenade)
     {
+        // material 색상 변경
         foreach (MeshRenderer mesh in meshs)
             mesh.material.color = Color.red;
 
@@ -196,6 +200,7 @@ public class Enemy : MonoBehaviour
             nav.enabled = false;
             anim.SetTrigger("doDie");
 
+            // 죽으면 점수 주고 코인 드랍
             Player player = target.GetComponent<Player>();
             player.score += score;
             int ranCoin = Random.Range(0, 3);
@@ -217,6 +222,7 @@ public class Enemy : MonoBehaviour
                     break;
             }
 
+            // 수류탄에 맞는 경우 날라감
             if (isGrenade)
             {
                 reactVec = reactVec.normalized;

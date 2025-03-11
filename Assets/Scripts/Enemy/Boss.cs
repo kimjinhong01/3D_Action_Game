@@ -1,14 +1,12 @@
 using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.AI;
 
 public class Boss : Enemy
 {
-    public GameObject missile;
-    public Transform missilePortA;
-    public Transform missilePortB;
-    public bool isLook;
+    public GameObject missile;      // 총알 프리팹
+    public Transform missilePortA;  // 총구A
+    public Transform missilePortB;  // 총구B
+    public bool isLook;             // 플레이어를 보고 있는지
 
     Vector3 lookVec;
     Vector3 tauntVec;
@@ -31,6 +29,7 @@ public class Boss : Enemy
 
         if (isLook)
         {
+            // 플레이어 조작키에 따라 예측해서 바라보기
             float h = Input.GetAxisRaw("Horizontal");
             float v = Input.GetAxisRaw("Vertical");
             lookVec = new Vector3(h, 0, v) * 5f;
@@ -46,6 +45,7 @@ public class Boss : Enemy
     {
         yield return new WaitForSeconds(0.1f);
 
+        // 랜덤으로 공격 패턴을 실행
         int ranAction = Random.Range(0, 5);
         switch (ranAction)
         {
@@ -63,6 +63,7 @@ public class Boss : Enemy
         }
     }
 
+    // 총알 두 개 발사
     IEnumerator MissileShot()
     {
         anim.SetTrigger("doShot");
@@ -81,6 +82,7 @@ public class Boss : Enemy
         StartCoroutine(Think());
     }
 
+    // Rock 발사
     IEnumerator RockShot()
     {
         isLook = false;
@@ -92,6 +94,7 @@ public class Boss : Enemy
         StartCoroutine(Think());
     }
 
+    // 점프해서 플레이어 밟기
     IEnumerator Taunt()
     {
         tauntVec = target.position + lookVec;
