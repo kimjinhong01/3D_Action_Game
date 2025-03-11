@@ -12,6 +12,9 @@ public class Player : MonoBehaviour
     public int hasGrenades;
     public GameObject grenadeObj;
     public Camera followCamera;
+    public GameManager manaager;
+
+    public AudioSource jumpSound;
 
     public int ammo;
     public int coin;
@@ -44,6 +47,7 @@ public class Player : MonoBehaviour
     bool isBorder;
     bool isDamage;
     bool isShop;
+    bool isDead;
 
     Vector3 moveVec;
     Vector3 dodgeVec;
@@ -100,7 +104,7 @@ public class Player : MonoBehaviour
         if (isDodge)
             moveVec = dodgeVec;
 
-        if (isSwap || isReload || !isFireReady || !isShop)
+        if (isSwap || isReload || !isFireReady || !isShop || !isDead)
             moveVec = Vector3.zero;
 
         if (!isBorder)
@@ -116,7 +120,7 @@ public class Player : MonoBehaviour
         transform.LookAt(transform.position + moveVec);
 
         // 마우스에 의한 회전
-        if (fDown && !isShop)
+        if (fDown && !isShop && !isDead)
         {
             Ray ray = followCamera.ScreenPointToRay(Input.mousePosition);
             RaycastHit rayHit;
@@ -131,12 +135,14 @@ public class Player : MonoBehaviour
 
     void Jump()
     {
-        if (jDown && moveVec == Vector3.zero && !isJump && !isDodge && !isSwap && !isShop)
+        if (jDown && moveVec == Vector3.zero && !isJump && !isDodge && !isSwap && !isShop && !isDead)
         {
             rigid.AddForce(Vector3.up * 15, ForceMode.Impulse);
             anim.SetBool("isJump", true);
             anim.SetTrigger("doJump");
             isJump = true;
+
+            jumpSound.Play();
         }
     }
 
@@ -148,7 +154,7 @@ public class Player : MonoBehaviour
         fireDelay += Time.deltaTime;
         isFireReady = equipWeapon.rate < fireDelay;
 
-        if (fDown && isFireReady && !isDodge && !isSwap && !isShop)
+        if (fDown && isFireReady && !isDodge && !isSwap && !isShop && !isDead)
         {
             equipWeapon.Use();
             anim.SetTrigger(equipWeapon.type == Weapon.Type.Melee ? "doSwing" : "doShot");
@@ -161,7 +167,7 @@ public class Player : MonoBehaviour
         if (hasGrenades == 0)
             return;
 
-        if (gDown && !isReload && !isSwap && !isShop)
+        if (gDown && !isReload && !isSwap && !isShop && !isDead)
         {
             Ray ray = followCamera.ScreenPointToRay(Input.mousePosition);
             RaycastHit rayHit;
@@ -192,7 +198,7 @@ public class Player : MonoBehaviour
         if (ammo == 0)
             return;
 
-        if (rDown && !isJump && !isDodge && !isSwap && isFireReady && !isShop)
+        if (rDown && !isJump && !isDodge && !isSwap && isFireReady && !isShop && !isDead)
         {
             anim.SetTrigger("doReload");
             isReload = true;
@@ -210,7 +216,7 @@ public class Player : MonoBehaviour
 
     void Dodge()
     {
-        if (jDown && moveVec != Vector3.zero && !isJump && !isDodge && !isSwap && !isShop)
+        if (jDown && moveVec != Vector3.zero && !isJump && !isDodge && !isSwap && !isShop && !isDead)
         {
             dodgeVec = moveVec;
             speed *= 2;
@@ -241,7 +247,7 @@ public class Player : MonoBehaviour
         if (sDown2) weaponIndex = 1;
         if (sDown3) weaponIndex = 2;
 
-        if ((sDown1 || sDown2 || sDown3) && !isJump && !isDodge && !isShop)
+        if ((sDown1 || sDown2 || sDown3) && !isJump && !isDodge && !isShop && !isDead)
         {
             if (equipWeapon != null)
                 equipWeapon.gameObject.SetActive(false);
@@ -265,7 +271,7 @@ public class Player : MonoBehaviour
 
     void Interaction()
     {
-        if (iDown && nearObject != null && !isJump && !isDodge)
+        if (iDown && nearObject != null && !isJump && !isDodge && !isDead)
         {
             if (nearObject.tag == "Weapon")
             {
@@ -378,6 +384,16 @@ public class Player : MonoBehaviour
 
         if (isBossAtk)
             rigid.velocity = Vector3.zero;
+
+        if (health <= 0 && !isDead)
+            OnDie();
+    }
+
+    void OnDie()
+    {
+        anim.SetTrigger("doDie");
+        isDead = true;
+        manaager.GameOver();
     }
 
     void OnTriggerStay(Collider other)
