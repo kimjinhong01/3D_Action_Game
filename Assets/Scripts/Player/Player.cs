@@ -5,39 +5,39 @@ using UnityEngine;
 
 public class Player : MonoBehaviour
 {
-    public float speed;
-    public GameObject[] weapons;
-    public bool[] hasWeapons;
-    public GameObject[] grenades;
-    public int hasGrenades;
-    public GameObject grenadeObj;
-    public Camera followCamera;
-    public GameManager manaager;
+    public float speed;             // 이동 속도
+    public GameObject[] weapons;    // 무기 프리팹
+    public bool[] hasWeapons;       // 무기 장착 유무
+    public GameObject[] grenades;   // 수류탄 프리팹
+    public int hasGrenades;         // 수류탄 있는지
+    public GameObject grenadeObj;   // 던질 수류탄 프리팹
+    public Camera followCamera;     // 메인 카메라
+    public GameManager manaager;    // 게임 매니저
 
     public AudioSource jumpSound;
 
-    public int ammo;
-    public int coin;
-    public int health;
-    public int score;
+    public int ammo;                // 총알
+    public int coin;                // 코인
+    public int health;              // 체력
+    public int score;               // 점수
 
-    public int maxAmmo;
-    public int maxCoin;
-    public int maxHealth;
-    public int maxHasGrenades;
+    public int maxAmmo;             // 최대 총알
+    public int maxCoin;             // 최대 코인
+    public int maxHealth;           // 최대 체력
+    public int maxHasGrenades;      // 수류탄 최대 개수
 
     float hAxis;
     float vAxis;
 
-    bool wDown;
-    bool jDown;
-    bool fDown;
-    bool gDown;
-    bool rDown;
-    bool iDown;
-    bool sDown1;
-    bool sDown2;
-    bool sDown3;
+    bool wDown;     // Walk         이동
+    bool jDown;     // Jump         점프
+    bool fDown;     // Fire         공격
+    bool gDown;     // Grenade      수류탄 투척
+    bool rDown;     // Reload       장전
+    bool iDown;     // Interact     상호작용
+    bool sDown1;    // Swap1        무기 바꾸기1
+    bool sDown2;    // Swap2        무기 바꾸기2
+    bool sDown3;    // Swap3        무기 바꾸기3
 
     bool isJump;
     bool isDodge;
@@ -54,10 +54,10 @@ public class Player : MonoBehaviour
 
     Rigidbody rigid;
     Animator anim;
-    MeshRenderer[] meshs;
+    MeshRenderer[] meshs;           // 캐릭터의 모든 메쉬들
 
-    GameObject nearObject;
-    public Weapon equipWeapon;
+    GameObject nearObject;          // 근처 오브젝트
+    public Weapon equipWeapon;      // 장착한 무기
     int equipWeaponIndex = -1;
     float fireDelay;
 
@@ -70,16 +70,16 @@ public class Player : MonoBehaviour
 
     void Update()
     {
-        GetInput();
-        Move();
-        Turn();
-        Jump();
-        Attack();
-        Grenade();
-        Reload();
-        Dodge();
-        Swap();
-        Interaction();
+        GetInput();         // 입력 확인
+        Move();             // 이동
+        Turn();             // 회전
+        Jump();             // 점프
+        Attack();           // 공격
+        Grenade();          // 수류탄 투척
+        Reload();           // 장전
+        Dodge();            // 구르기
+        Swap();             // 무기 바꾸기
+        Interaction();      // 상호작용
     }
 
     void GetInput()
@@ -99,27 +99,32 @@ public class Player : MonoBehaviour
 
     void Move()
     {
+        // 이동 방향 정규화
         moveVec = new Vector3(hAxis, 0, vAxis).normalized;
 
+        // 피하는 중이면 방향 고정
         if (isDodge)
             moveVec = dodgeVec;
 
+        // 다른 행동 중이면 이동 제한
         if (isSwap || isReload || !isFireReady || !isShop || !isDead)
             moveVec = Vector3.zero;
 
+        // 벽에 부딪히지 않았다면 이동
         if (!isBorder)
             transform.position += moveVec * speed * (wDown ? 0.3f : 1f) * Time.deltaTime;
 
+        // 애니메이션 설정
         anim.SetBool("isRun", moveVec != Vector3.zero);
         anim.SetBool("isWalk", wDown);
     }
 
     void Turn()
     {
-        // Ű���忡 ���� ȸ��
+        // 키보드에 의한 회전
         transform.LookAt(transform.position + moveVec);
 
-        // ���콺�� ���� ȸ��
+        // 마우스에 의한 회전
         if (fDown && !isShop && !isDead)
         {
             Ray ray = followCamera.ScreenPointToRay(Input.mousePosition);
@@ -135,6 +140,7 @@ public class Player : MonoBehaviour
 
     void Jump()
     {
+        // 위로 순간적인 힘을 주어 점프 구현
         if (jDown && moveVec == Vector3.zero && !isJump && !isDodge && !isSwap && !isShop && !isDead)
         {
             rigid.AddForce(Vector3.up * 15, ForceMode.Impulse);
@@ -154,6 +160,7 @@ public class Player : MonoBehaviour
         fireDelay += Time.deltaTime;
         isFireReady = equipWeapon.rate < fireDelay;
 
+        // 공격 준비가 되면 종류에 따라 공격
         if (fDown && isFireReady && !isDodge && !isSwap && !isShop && !isDead)
         {
             equipWeapon.Use();
@@ -167,6 +174,7 @@ public class Player : MonoBehaviour
         if (hasGrenades == 0)
             return;
 
+        // 클릭한 방향 구해서 수류탄 투척
         if (gDown && !isReload && !isSwap && !isShop && !isDead)
         {
             Ray ray = followCamera.ScreenPointToRay(Input.mousePosition);
@@ -198,6 +206,7 @@ public class Player : MonoBehaviour
         if (ammo == 0)
             return;
 
+        // 장전
         if (rDown && !isJump && !isDodge && !isSwap && isFireReady && !isShop && !isDead)
         {
             anim.SetTrigger("doReload");
@@ -216,6 +225,7 @@ public class Player : MonoBehaviour
 
     void Dodge()
     {
+        // 구르기
         if (jDown && moveVec != Vector3.zero && !isJump && !isDodge && !isSwap && !isShop && !isDead)
         {
             dodgeVec = moveVec;
@@ -247,6 +257,7 @@ public class Player : MonoBehaviour
         if (sDown2) weaponIndex = 1;
         if (sDown3) weaponIndex = 2;
 
+        // weaponIndex에 맞춰서 장착 무기 변경
         if ((sDown1 || sDown2 || sDown3) && !isJump && !isDodge && !isShop && !isDead)
         {
             if (equipWeapon != null)
@@ -271,6 +282,7 @@ public class Player : MonoBehaviour
 
     void Interaction()
     {
+        // 근처 오브젝트 감지 후, 무기 획득 혹은 상점 입장
         if (iDown && nearObject != null && !isJump && !isDodge && !isDead)
         {
             if (nearObject.tag == "Weapon")
@@ -297,6 +309,7 @@ public class Player : MonoBehaviour
 
     void StopToWall()
     {
+        // Ray 쏴서 벽 있는지 확인
         Debug.DrawRay(transform.position, transform.forward * 5, Color.green);
         isBorder = Physics.Raycast(transform.position, transform.forward, 5, LayerMask.GetMask("Wall"));
     }
@@ -309,6 +322,7 @@ public class Player : MonoBehaviour
 
     void OnCollisionEnter(Collision collision)
     {
+        // 바닥에 닿으면 점프 가능
         if (collision.gameObject.tag == "Floor")
         {
             anim.SetBool("isJump", false);
@@ -318,6 +332,7 @@ public class Player : MonoBehaviour
 
     void OnTriggerEnter(Collider other)
     {
+        // 아이템 종류에 따라 변수에 적용
         if (other.tag == "Item")
         {
             Item item = other.GetComponent<Item>();
@@ -347,6 +362,7 @@ public class Player : MonoBehaviour
             }
             Destroy(other.gameObject);
         }
+        // 적 총알에 맞으면 데미지, 일정 시간 무적
         else if (other.tag == "EnemyBullet")
         {
             if (!isDamage)
@@ -363,6 +379,7 @@ public class Player : MonoBehaviour
         }
     }
 
+    // 데미지 입으면 Material 색상 변경
     IEnumerator OnDamage(bool isBossAtk)
     {
         isDamage = true;
@@ -389,6 +406,7 @@ public class Player : MonoBehaviour
             OnDie();
     }
 
+    // 죽으면 게임 오버
     void OnDie()
     {
         anim.SetTrigger("doDie");
@@ -396,12 +414,14 @@ public class Player : MonoBehaviour
         manaager.GameOver();
     }
 
+    // 근처 오브젝트 감지
     void OnTriggerStay(Collider other)
     {
         if(other.tag == "Weapon" || other.tag == "Shop")
             nearObject = other.gameObject;
     }
 
+    // 상점 떠나기
     void OnTriggerExit(Collider other)
     {
         if (other.tag == "Weapon")

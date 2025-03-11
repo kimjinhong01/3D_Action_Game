@@ -15,6 +15,7 @@ public class BossMissile : Bullet
 
     void Update()
     {
+        // 유도 미사일 구현
         nav.SetDestination(target.position);
     }
 }

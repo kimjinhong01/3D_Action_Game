@@ -6,16 +6,16 @@ using UnityEngine.AI;
 public class Enemy : MonoBehaviour
 {
     public enum Type { A, B, C, D }
-    public Type enemyType;
+    public Type enemyType;          // 몬스터 종류
 
     public int maxHealth;
     public int curHealth;
     public int score;
     public GameManager manager;
-    public Transform target;
-    public BoxCollider meleeArea;
-    public GameObject bullet;
-    public GameObject[] coins;
+    public Transform target;        // 타겟
+    public BoxCollider meleeArea;   // 공격 범위 Collider
+    public GameObject bullet;       // 발사체
+    public GameObject[] coins;      // 드랍할 코인
     public bool isChase;
     public bool isAttack;
     public bool isDead;
@@ -46,6 +46,7 @@ public class Enemy : MonoBehaviour
 
     void Update()
     {
+        // 일반 몬스터일 경우 타겟 따라다니기
         if (nav.enabled && enemyType != Type.D)
         {
             nav.SetDestination(target.position);
@@ -85,7 +86,8 @@ public class Enemy : MonoBehaviour
                     break;
             }
 
-            RaycastHit[] rayHits = Physics.SphereCastAll(transform.position, targetRadius, transform.forward, targetRange, LayerMask.GetMask("Enemy"));
+            // 범위 안에 Player 감지되면 공격
+            RaycastHit[] rayHits = Physics.SphereCastAll(transform.position, targetRadius, transform.forward, targetRange, LayerMask.GetMask("Player"));
             if (rayHits.Length > 0 && !isAttack)
             {
                 StartCoroutine(Attack());

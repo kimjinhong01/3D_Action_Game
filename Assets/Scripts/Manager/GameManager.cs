@@ -7,24 +7,24 @@ using UnityEngine.UI;
 
 public class GameManager : MonoBehaviour
 {
-    public GameObject menuCam;
-    public GameObject gameCam;
-    public Player player;
-    public Boss boss;
-    public GameObject itemShop;
-    public GameObject weaponShop;
-    public GameObject startZone;
-    public int stage;
-    public float playTime;
-    public bool isBattle;
-    public int enemyCntA;
-    public int enemyCntB;
-    public int enemyCntC;
-    public int enemyCntD;
+    public GameObject menuCam;      // 메인 메뉴 카메라
+    public GameObject gameCam;      // 게임 화면 카메라
+    public Player player;           // 플레이어
+    public Boss boss;               // 보스
+    public GameObject itemShop;     // 아이템 상점
+    public GameObject weaponShop;   // 무기 상점
+    public GameObject startZone;    // 스테이지 시작 발판
+    public int stage;               // 현재 스테이지
+    public float playTime;          // 플레이 타임
+    public bool isBattle;           // 전투 중인지
+    public int enemyCntA;           // A 몬스터 개수
+    public int enemyCntB;           // B 몬스터 개수
+    public int enemyCntC;           // C 몬스터 개수
+    public int enemyCntD;           // D 몬스터 개수
 
-    public Transform[] enemyZone;
-    public GameObject[] enemies;
-    public List<int> enemyList;
+    public Transform[] enemyZone;   // 적 생성 위치
+    public GameObject[] enemies;    // 모든 몬스터 등록
+    public List<int> enemyList;     // 필드 내 몬스터들
 
     public GameObject menuPanel;
     public GameObject gamePanel;
@@ -53,10 +53,12 @@ public class GameManager : MonoBehaviour
         enemyList = new List<int>();
         maxScoreTxt.text = string.Format("{0:n0}", PlayerPrefs.GetInt("MaxScore"));
 
+        // PlayerPrefs로 데이터 저장
         if (PlayerPrefs.HasKey("MaxScore"))
             PlayerPrefs.SetInt("MaxScore", 0);
     }
 
+    // 게임 시작
     public void GameStart()
     {
         menuCam.SetActive(false);
@@ -68,12 +70,14 @@ public class GameManager : MonoBehaviour
         player.gameObject.SetActive(true);
     }
 
+    // 게임 종료
     public void GameOver()
     {
         gamePanel.SetActive(false);
         overPanel.SetActive(true);
         curScoreText.text = scoreTxt.text;
 
+        // Best 스코어 적용
         int maxScore = PlayerPrefs.GetInt("MaxScore");
         if (player.score > maxScore)
         {
@@ -87,6 +91,7 @@ public class GameManager : MonoBehaviour
         SceneManager.LoadScene(0);
     }
 
+    // 스테이지 시작
     public void StageStart()
     {
         itemShop.SetActive(false);
@@ -100,6 +105,7 @@ public class GameManager : MonoBehaviour
         StartCoroutine(InBattle());
     }
 
+    // 스테이지 종료
     public void StageEnd()
     {
         player.transform.position = Vector3.up * 0.8f;
@@ -115,8 +121,10 @@ public class GameManager : MonoBehaviour
         stage++;
     }
 
+    // 전투 시작
     IEnumerator InBattle()
     {
+        // 5라운드마다 보스전
         if (stage % 5 == 0)
         {
             enemyCntD++;
@@ -128,6 +136,7 @@ public class GameManager : MonoBehaviour
         }
         else
         {
+            // 랜덤으로 몬스터 예약
             for (int i = 0; i < stage; i++)
             {
                 int ran = Random.Range(0, 3);
@@ -147,6 +156,7 @@ public class GameManager : MonoBehaviour
                 }
             }
 
+            // 예약된 몬스터 생성
             while (enemyList.Count > 0)
             {
                 int ranZone = Random.Range(0, 4);
@@ -159,7 +169,8 @@ public class GameManager : MonoBehaviour
             }
         }
 
-        while (enemyCntA + enemyCntB + enemyCntC +enemyCntD > 0)
+        // 모든 몬스터 죽었으면 스테이지 종료
+        while (enemyCntA + enemyCntB + enemyCntC + enemyCntD > 0)
         {
             yield return null;
         }
@@ -177,7 +188,7 @@ public class GameManager : MonoBehaviour
 
     void LateUpdate()
     {
-        // ��� UI
+        // 상단 UI
         scoreTxt.text = string.Format("{0:n0}", player.score);
         stageTxt.text = "STAGE" + stage;
 
@@ -186,7 +197,7 @@ public class GameManager : MonoBehaviour
         int sec = (int)(playTime % 60);
         playTimeTxt.text = string.Format("{0:00}", hour) + ":" + string.Format("{0:00}", min) + ":" + string.Format("{0:00}", sec);
 
-        // �÷��̾� UI
+        // 플레이어 UI
         playerHealthTxt.text = player.health + " / " + player.maxHealth;
         playerCoinTxt.text = string.Format("{0:n0}", player.coin);
         if (player.equipWeapon == null ||
@@ -195,18 +206,18 @@ public class GameManager : MonoBehaviour
         else
             playerAmmoTxt.text = player.equipWeapon.curAmmo + " / " + player.ammo;
 
-        // ���� UI
+        // 무기 UI
         weapon1Img.color = new Color(1, 1, 1, player.hasWeapons[0] ? 1 : 0);
         weapon2Img.color = new Color(1, 1, 1, player.hasWeapons[1] ? 1 : 0);
         weapon3Img.color = new Color(1, 1, 1, player.hasWeapons[2] ? 1 : 0);
         weaponRImg.color = new Color(1, 1, 1, player.hasGrenades > 0 ? 1 : 0);
 
-        // ���� ���� UI
+        // 몬스터 숫자 UI
         enemyATxt.text = enemyCntA.ToString();
         enemyBTxt.text = enemyCntB.ToString();
         enemyCTxt.text = enemyCntC.ToString();
 
-        // ���� ü�� UI
+        // 보스 체력 UI
         if (boss != null)
         {
             bossHealthGroup.anchoredPosition = Vector3.down * 30;
